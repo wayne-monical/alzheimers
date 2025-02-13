@@ -1,0 +1,87 @@
+
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+alzheimers = read_csv('alzheimers.csv')
+```
+
+
+```{r}
+alzheimers
+```
+
+```{r}
+sapply(select(alzheimers, -RowId)[sapply(select(alzheimers, -RowId), is.character)], unique)
+```
+
+
+```{r}
+response_questions = 
+  alzheimers %>% 
+  filter(Class == 'Cognitive Decline') %>% 
+  select('Question') %>% 
+  unique() %>% 
+  unlist() |> 
+  as.vector()
+```
+
+
+
+Are women more susceptible to alzheimer's disease, or do they just live longer?
+
+
+
+```{r}
+gender = 
+  alzheimers %>% 
+  filter(Question == "Percentage of older adults who reported that as a result of subjective cognitive decline or memory loss that they need assistance with day-to-day activities", 
+         !is.na(Data_Value),
+         StratificationCategory2 == 'Gender',
+         ! LocationDesc %in% c('North', "East", "South", "West"),
+         Stratification1 %in% c('50-64 years', '65 years or older'),
+         Stratification2 %in% c('Male', 'Female')) %>% 
+  select(
+    Data_Value,
+    Stratification1,
+    Stratification2
+  )
+
+
+summary(lm(Data_Value ~ ., data = gender))
+```
+
+```{r}
+for(question in response_questions){
+  print(question)
+  
+  gender = 
+  alzheimers %>% 
+    filter(Question == question, 
+         !is.na(Data_Value),
+         StratificationCategory2 == 'Gender',
+         ! LocationDesc %in% c('North', "East", "South", "West"),
+         Stratification1 %in% c('50-64 years', '65 years or older'),
+         Stratification2 %in% c('Male', 'Female')) %>% 
+  select(
+    Data_Value,
+    Stratification1,
+    Stratification2
+  )
+
+
+  print(summary(lm(Data_Value ~ ., data = gender)))
+}
+```
+
+```{r}
+
+
+```
+
+
+
+
